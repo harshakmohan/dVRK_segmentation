@@ -5,3 +5,4 @@ matplotlib
 Pillow
 opencv-python
 argparse
+tqdm
