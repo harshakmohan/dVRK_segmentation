@@ -19,6 +19,7 @@ def parse_command_line():
                         metavar='train/predict',
                         help='Specify "train" or "predict".'
                         )
+
     parser.add_argument('--model',
                         action='store',
                         default='UNET',
@@ -38,13 +39,15 @@ def parse_command_line():
                         help='Specify the location of the data to be processed.'
                         )
 
-    parser.add_argument('--output_folder',
+    parser.add_argument('--output_checkpoint',
                         action='store',
+                        default = '/model_checkpoints/',
                         type=str,
                         required=True,
-                        metavar='out',
-                        help='Specify the location where output files should be written.'
+                        metavar='output_dir',
+                        help='Specify the location where output model checkpoint files should be written.'
                         )
+
     parser.add_argument('--checkpoint_name',
                         action='store',
                         type=str,
