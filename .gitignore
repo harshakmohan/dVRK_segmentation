@@ -4,8 +4,8 @@ __pycache__/
 *$py.class
 
 # Data directory
-endovis_dataset
-ucl_dataset
+endovis_dataset/
+ucl_dataset/
 
 # C extensions
 *.so

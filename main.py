@@ -6,6 +6,7 @@ def main():
 
 def parse_command_line():
     # TODO: Define all required command line arguments here. This will serve as entry point to the code.
+    # TODO: @Harsha include arguments for all the hyperparameters for training
     import argparse
 
     parser = argparse.ArgumentParser(description='Entry point for robot tool segmentation.')

@@ -11,6 +11,8 @@ from torch.utils.data import DataLoader
 from datasets import UCL, EndoVis
 from torch import nn
 
+__all__ =['save_checkpoint', 'load_checkpoint', 'check_accuracy', 'DiceLoss2D']
+
 def save_checkpoint(state, filename='model_checkpoints/dummy_checkpoint.pth.tar'):
     print('=> Saving checkpoint')
     torch.save(state, filename)

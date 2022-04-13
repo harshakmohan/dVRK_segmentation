@@ -3,3 +3,7 @@ After running inference on a dataset, use this script to generate visualizations
 
 Given a sequence of frames and the predictions for those frames, load the frames side by side and play the sequence.
 '''
+
+# TODO: @Gurion Flesh out initial visualization function
+
+# TODO: @Gurion
