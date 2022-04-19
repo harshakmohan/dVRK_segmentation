@@ -8,7 +8,7 @@ import logging
 import torch
 
 from torch.utils.data import DataLoader
-from datasets import UCL, EndoVis
+from src.datasets import UCL, EndoVis
 from torch import nn
 
 __all__ =['save_checkpoint', 'load_checkpoint', 'check_accuracy', 'DiceLoss2D']

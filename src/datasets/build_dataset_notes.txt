@@ -1,0 +1,4 @@
+Couple thoughts on how to structure the command line args and the dataset class.
+
+Can either select specific video numbers or just assign a random split for train / test / val
+

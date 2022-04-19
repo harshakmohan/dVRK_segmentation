@@ -18,10 +18,15 @@ class UCL(Dataset):
         pass
 
     def __len__(self):
-        pass
+        return len(self.images)
 
-    def __getitem__(self):
-        pass
+    def __getitem__(self, index: int):
+
+        image = torch.from_numpy(np.array(Image.open(self.image_paths[index]).convert('RGB')) / 255.0).float()
+        image = torch.permute(image, (2, 0, 1))
+        mask = torch.from_numpy(np.array(Image.open(self.mask_paths[index]).convert('L'), dtype=np.float32) / 255.0).float()
+
+        return image, mask
 
 
 class EndoVis(Dataset):
