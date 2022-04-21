@@ -1,9 +1,33 @@
-'''
-After running inference on a dataset, use this script to generate visualizations of the results.
+import random
 
-Given a sequence of frames and the predictions for those frames, load the frames side by side and play the sequence.
-'''
+def viz_test_data(dataloader, model):
+    
+    '''
+    Function for visualizing predictions for testset
 
-# TODO: @Gurion Flesh out initial visualization function
+    Returns: None
 
-# TODO: @Gurion
+    Parameter dataloader: dataloader object
+
+    Parameter model: model for generating predictions
+    '''     
+    
+    for data in train_dataloader:
+        img, target = data
+        
+    img = img.detach().numpy()
+
+    # This will change depending on what images we want to visualize
+    y = img[random.randrange(10)]
+    y = y.swapaxes(0,2)
+    y = y.swapaxes(1,0)
+    
+    f, axarr = plt.subplots(1,2, figsize=(15,15))
+    plt.axis('off')
+    axarr[0].imshow(y)
+    
+    # Replace this with model prediction
+    axarr[1].imshow(y)
+    plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[]);    
+
+# viz_test_data(train_dataloader, model)
