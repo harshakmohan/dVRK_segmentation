@@ -2,3 +2,8 @@ Couple thoughts on how to structure the command line args and the dataset class.
 
 Can either select specific video numbers or just assign a random split for train / test / val
 
+UCL images come as 701 x 538
+EndoVis images come as 1,920 x 1,080
+
+For endovis data, we need to crop the image from the center point. There is dead black space
+on all four sides.

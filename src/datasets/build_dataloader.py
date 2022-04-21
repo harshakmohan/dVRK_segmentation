@@ -8,4 +8,7 @@ from torch.utils.data import Dataset
 from build_dataset import UCL, EndoVis
 
 def build_dataloaders():
-    pass
+
+    train_dataloader = None
+    test_dataloader = None
+    return train_dataloader, test_dataloader
