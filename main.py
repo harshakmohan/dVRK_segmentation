@@ -8,10 +8,11 @@ from src.datasets.build_dataset import UCL, EndoVis
 def main():
     args = parse_command_line()
     # TODO: Build out rest of main function here.
+    folder = args['ucl_data_dir']
+    videos = ['Video_01', 'Video_02', 'Video_04', 'Video_05']
+    set = UCL(data_folder=folder, select_all=False, video_paths=videos)
+    print(len(set))
 
-    x, y = UCL(data_folder=args['ucl_data_dir'], random_selection=True, train_videos=0, test_videos=0)
-    print(x)
-    print(y)
 
 
 def parse_command_line():

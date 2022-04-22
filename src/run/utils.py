@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from src.datasets import UCL, EndoVis
 from torch import nn
 
-__all__ =['save_checkpoint', 'load_checkpoint', 'check_accuracy', 'DiceLoss2D']
+__all__ =['save_checkpoint', 'load_checkpoint', 'plot_loss', 'check_accuracy', 'DiceLoss2D']
 
 def save_checkpoint(state, filename='model_checkpoints/dummy_checkpoint.pth.tar'):
     print('=> Saving checkpoint')
@@ -21,6 +21,10 @@ def save_checkpoint(state, filename='model_checkpoints/dummy_checkpoint.pth.tar'
 def load_checkpoint(checkpoint, model):
     print('=> Loading checkpoint')
     model.load_state_dict(checkpoint['state_dict'])
+
+
+def plot_loss():
+    pass
 
 
 def check_accuracy(loader, model, device="cuda:0" if torch.cuda.is_available() else "cpu"):

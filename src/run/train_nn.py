@@ -1,35 +1,38 @@
 '''
-Define train loop here
+Train Loop
 '''
-
-# TODO: @Harsha Flesh out train loop function
 
 import torch
 from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
-from .src.models import UNET
-from .utils import (load_checkpoint, save_checkpoint, check_accuracy, save_predictions_as_imgs)
-from .utils import  DiceLoss2D
+from src.models import UNET
+from .utils import ( save_checkpoint, check_accuracy )
+from .utils import DiceLoss2D
 import os
 
-def train_fn(loader, model, optimizer, loss_fn, device):
+def train_fn(loader, model, optimizer, loss_fn, num_epochs):
     loop = tqdm(loader)
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-    for batch_idx, (data, targets) in enumerate(loop):
-        data = data.to(device=device)
-        targets = targets.float().unsqueeze(1).to(device=device)
+    for epoch in range(num_epochs):
+        for batch_idx, (data, targets) in enumerate(loop):
+            data = data.to(device=device)
+            targets = targets.float().unsqueeze(1).to(device=device)
 
-        # forward
-        with torch.cuda.amp.autocast():
-            predictions = model(data)
-            loss = loss_fn(predictions, targets)
-            print("loss = ", loss.item())
+            # forward
+            with torch.cuda.amp.autocast():
+                predictions = model(data)
+                loss = loss_fn(predictions, targets)
+                print("loss = ", loss.item())
 
-        # backward
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+            # backward
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-        # update tqdm loop
-        loop.set_postfix(loss=loss.item())
+            # update tqdm loop
+            loop.set_postfix(loss=loss.item())
+
+    # Saving model after last epoch
+    save_checkpoint( model.state_dict(), 'checkpoints/model_checkpoint.pth' )
