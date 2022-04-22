@@ -1,24 +1,26 @@
 import argparse
 import torch
 import os
-from src.datasets.build_dataset import UCL, EndoVis
-
+from src.datasets.build_dataloader import UCL_dataloader
 
 
 def main():
     args = parse_command_line()
-    # TODO: Build out rest of main function here.
+    # Testing out some things here for now.
     folder = args['ucl_data_dir']
-    videos = ['Video_01', 'Video_02', 'Video_04', 'Video_05']
-    set = UCL(data_folder=folder, select_all=False, video_paths=videos)
-    print(len(set))
+    train_vids = ['Video_01', 'Video_02', 'Video_04', 'Video_05']
+    test_vids = ['Video_06', 'Video_07']
+
+    train_loader, test_loader = UCL_dataloader(data_dir=folder, batch_size=4, train_videos=train_vids, test_videos=test_vids)
+
+
+
+
 
 
 
 def parse_command_line():
     # TODO: Define all required command line arguments here. This will serve as entry point to the code.
-    # TODO: @Harsha include arguments for all the hyperparameters for training
-
 
     parser = argparse.ArgumentParser(description='Entry point for robot tool segmentation.')
 
