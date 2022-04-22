@@ -1,7 +1,11 @@
 import argparse
 import torch
 import os
+import torch.optim as optim
 from src.datasets.build_dataloader import UCL_dataloader
+from src.models.unet import UNET
+from src.run.train_nn import train_fn
+from src.run.utils import DiceLoss2D
 
 
 def main():
@@ -12,6 +16,12 @@ def main():
     test_vids = ['Video_06', 'Video_07']
 
     train_loader, test_loader = UCL_dataloader(data_dir=folder, batch_size=4, train_videos=train_vids, test_videos=test_vids)
+    model = UNET()
+    lr = 0.001
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    loss = DiceLoss2D()
+    num_epochs = 10
+    train_fn(train_loader, model, optimizer, loss, num_epochs)
 
 
 

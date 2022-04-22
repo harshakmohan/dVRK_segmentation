@@ -5,7 +5,7 @@ import torchvision.transforms.functional as TF
 
 from PIL import Image
 from torch.utils.data import DataLoader
-from build_dataset import UCL, EndoVis
+from src.datasets.build_dataset import UCL, EndoVis
 
 def UCL_dataloader(data_dir, batch_size, train_videos, test_videos):
 
