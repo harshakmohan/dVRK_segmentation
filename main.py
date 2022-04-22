@@ -14,19 +14,15 @@ def main():
     folder = args['ucl_data_dir']
     train_vids = ['Video_01', 'Video_02', 'Video_04', 'Video_05']
     test_vids = ['Video_06', 'Video_07']
-
-    train_loader, test_loader = UCL_dataloader(data_dir=folder, batch_size=4, train_videos=train_vids, test_videos=test_vids)
+    batch_size = args['batch_size']
+    num_epochs = args['num_epochs']
+    lr = args['learning_rate']
     model = UNET()
-    lr = 0.001
+
+    train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
     optimizer = optim.Adam(model.parameters(), lr=lr)
     loss = DiceLoss2D()
-    num_epochs = 10
     train_fn(train_loader, model, optimizer, loss, num_epochs)
-
-
-
-
-
 
 
 def parse_command_line():
@@ -96,7 +92,7 @@ def parse_command_line():
 
     parser.add_argument('--learning_rate',
                         action='store',
-                        default = 0.0001,
+                        default = 0.001,
                         type=float,
                         required=False,
                         metavar='learning rate',
@@ -123,30 +119,30 @@ def parse_command_line():
 
     parser.add_argument('--num_epochs',
                         action='store',
-                        default = 3,
+                        default = 5,
                         type=float,
                         required=False,
                         metavar='num epochs',
                         help='Specify num epochs'
                         )
 
-    # parser.add_argument('--img_width',
-    #                     action='store',
-    #                     default = 538,
-    #                     type=int,
-    #                     required=True,
-    #                     metavar='image width',
-    #                     help='Specify width to crop image to from center'
-    #                     )
-    #
-    # parser.add_argument('--img_height',
-    #                     action='store',
-    #                     default = 701,
-    #                     type=int,
-    #                     required=True,
-    #                     metavar='num epochs',
-    #                     help='Specify height to crop image to from center'
-    #                     )
+    parser.add_argument('--img_width',
+                        action='store',
+                        default = 538,
+                        type=int,
+                        required=False,
+                        metavar='image width',
+                        help='Specify width to crop image to from center'
+                        )
+
+    parser.add_argument('--img_height',
+                        action='store',
+                        default = 701,
+                        type=int,
+                        required=False,
+                        metavar='num epochs',
+                        help='Specify height to crop image to from center'
+                        )
 
     parser.add_argument('--ucl_all', # TODO: This arg will indicate if user wants to use specific video folders or if they just wanna use all of them
                         action='store',
@@ -157,23 +153,6 @@ def parse_command_line():
                         help='T/F select all of UCL data or not'
                         )
 
-    parser.add_argument('--ucl_train', # TODO: If the above arg is false, then indicate which ucl videos to use for train here
-                        action='store',
-                        default = 123456,
-                        type=int,
-                        required=False,
-                        metavar='ucl train path selection',
-                        help='Specify whether you want to use all the videos in UCL or if you want to use specific video folders.'
-                        )
-
-    parser.add_argument('--ucl_test', # TODO: If the above arg is false, then indicate which ucl videos to use for test here
-                        action='store',
-                        default = 789,
-                        type=int,
-                        required=False,
-                        metavar='ucl test path selection',
-                        help='Specify whether you want to use all the videos in UCL or if you want to use specific video folders.'
-                        )
 
 
     return vars(parser.parse_args())
