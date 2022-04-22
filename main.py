@@ -10,6 +10,7 @@ from src.run.utils import DiceLoss2D
 
 def main():
     args = parse_command_line()
+
     # Testing out some things here for now.
     folder = args['ucl_data_dir']
     train_vids = ['Video_01', 'Video_02', 'Video_04', 'Video_05']
