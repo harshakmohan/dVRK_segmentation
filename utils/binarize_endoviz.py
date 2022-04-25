@@ -3,13 +3,8 @@ import numpy as np
 import os
 import shutil
 
-def crop_center_np(img,cropx,cropy):
-    y,x = img.shape
-    startx = x//2-(cropx//2)
-    starty = y//2-(cropy//2)    
-    return img[starty:starty+cropy,startx:startx+cropx]
 
-def crop_center_img(img, cropx, cropy):
+def crop_center(img, cropx, cropy):
     width, height = img.size 
     left = round((width - cropx)/2)
     top = round((height - cropy)/2)
@@ -47,14 +42,13 @@ for folder in subfolders: #instrument_dataset_x
         save_name = f'{folder[-1]}_frame{str(i).zfill(3)}.png'
         masks = [os.path.join(gt, f'{tool}/{img_name}') for tool in gt_folders if tool != os.path.abspath(os.path.join(gt, 'Other_labels'))] #masks associated with frame
         images = [np.asarray(Image.open(mask)) for mask in masks]
-        for image in images:
-            image = crop_center_np(image, 701, 538)
         summed = sum(images)
         binary_mask = np.where(summed > 0, 255, 0)
         img_mask = Image.fromarray(binary_mask.astype('uint8'))
+        img_mask = crop_center(img_mask, 701, 538)
         img_mask.save(f'{binary_path}/labels/{save_name}')
 
         orig = Image.open(f'{frames}/{img_name}')
-        orig = crop_center_img(orig, 701, 538)
+        orig = crop_center(orig, 701, 538)
         orig.save(f'{binary_path}/img/{save_name}')
     
