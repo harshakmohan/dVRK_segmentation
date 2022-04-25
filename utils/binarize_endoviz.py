@@ -57,4 +57,4 @@ for folder in subfolders: #instrument_dataset_x
         orig = Image.open(f'{frames}/{img_name}')
         orig = crop_center_img(orig, 701, 538)
         orig.save(f'{binary_path}/img/{save_name}')
-    break
+    
