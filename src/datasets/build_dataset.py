@@ -70,16 +70,19 @@ class UCL(Dataset):
 
 class EndoVis(Dataset):
     def __init__(self, data_folder: str):
-        self.image_paths = []
-        self.mask_paths = []
+        img_folder = os.path.abspath(f'{data_folder}/img')
+        label_folder = os.path.abspath(f'{data_folder}/labels')
+
+        self.img_paths = [os.path.join(img_folder, img) for img in os.listdir(img_folder)]
+        self.label_paths = [os.path.join(img_folder, img) for img in os.listdir(label_folder)]
 
     def __len__(self):
-        pass
+        return len(self.img_paths)
 
-    def __getitem__(self):
-        image = 0
-        mask = 0
-        return image, mask
+    def __getitem__(self, idx: int):
+        img = torch.from_numpy(np.asarray(Image.open(self.img_paths[idx]))).float()
+        label = torch.from_numpy(np.asarray(Image.open(self.label_paths[idx]))).float()
+        return img, label
 
 
 def build_dataloaders():
