@@ -68,7 +68,7 @@ class UCL(Dataset):
         return image, mask
 
 
-class EndoVis(Dataset):
+class BinaryEndoVis(Dataset):
     def __init__(self, data_folder: str):
         img_folder = os.path.abspath(f'{data_folder}/img')
         label_folder = os.path.abspath(f'{data_folder}/labels')
