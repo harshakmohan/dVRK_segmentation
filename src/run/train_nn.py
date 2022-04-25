@@ -13,7 +13,10 @@ import os
 
 def train_fn(loader, model, optimizer, loss_fn, num_epochs):
     loop = tqdm(loader)
+
+    # Send model to compute device
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    model = model.to(device=device)
 
     for epoch in range(num_epochs):
         for batch_idx, (data, targets) in enumerate(loop):
