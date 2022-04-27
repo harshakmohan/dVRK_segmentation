@@ -2,32 +2,55 @@ import argparse
 import torch
 import os
 import torch.optim as optim
+import torch.nn as nn
 from src.datasets.build_dataloader import UCL_dataloader
+from src.run.utils import check_accuracy, load_checkpoint
 from src.models.unet import UNET
 from src.run.train_nn import train_fn
-from src.run.utils import DiceLoss2D
+from src.run.utils import DiceLoss2D, SoftDiceLoss
 
 
 def main():
     args = parse_command_line()
 
-    # Testing out some things here for now.
+    # Unpack args
     folder = args['ucl_data_dir']
-    train_vids = ['Video_01', 'Video_02', 'Video_04', 'Video_05']
-    test_vids = ['Video_06', 'Video_07']
+    run_mode = args['run_mode']
+
+    #train_vids = ['Video_01']
+    train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07', 'Video_08', 'Video_09', 'Video_10', 'Video_12', 'Video_13']
+    test_vids = ['Video_14']
     batch_size = args['batch_size']
     num_epochs = args['num_epochs']
+    device = args['device']
     lr = args['learning_rate']
-    model = UNET()
+    model = UNET().to(device)
 
-    train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
-    optimizer = optim.Adam(model.parameters(), lr=lr)
-    loss = DiceLoss2D()
-    train_fn(train_loader, model, optimizer, loss, num_epochs)
+    if run_mode=='train':
+        print('Preparing to train!')
+        # Prepare data loaders, optimizer, loss fn
+        train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
+        optimizer = optim.Adam(model.parameters(), lr=lr)
+
+        #loss = DiceLoss2D()
+        loss = nn.BCEWithLogitsLoss()
+        #loss = SoftDiceLoss()
+
+        train_fn(train_loader, test_loader, model, optimizer, loss, num_epochs)
+    elif run_mode=='predict':
+        print('Preparing to predict!')
+        # TODO: If predict mode selected, then perform inference using a model and selected data then save predictions as images
+        # checkpoint = '/home/harsha/PycharmProjects/dVRK_segmentation/checkpoints/model_checkpoint.pth'
+        # load_checkpoint(model, checkpoint)
+        # check_accuracy(test_loader, model)
+        pass
+
+    else:
+        raise ValueError('Incorrect run mode specified. Either specify "train" or "predict"...')
+
 
 
 def parse_command_line():
-    # TODO: Define all required command line arguments here. This will serve as entry point to the code.
 
     parser = argparse.ArgumentParser(description='Entry point for robot tool segmentation.')
 
@@ -49,6 +72,16 @@ def parse_command_line():
                         choices=['UNET'],
                         metavar='model',
                         help='If running in train mode, specify which architecture to train on.'
+                        )
+
+    parser.add_argument('--loss_fn',
+                        action='store',
+                        default='BCEWithLogitsLoss',
+                        type=str,
+                        required=False,
+                        choices=['BCEWithLogitsLoss', 'DiceLoss2D', 'SoftDiceLoss'],
+                        metavar='loss_fn',
+                        help='Specify which loss function to use...'
                         )
 
     current_dir = os.path.abspath(os.getcwd())
@@ -93,7 +126,7 @@ def parse_command_line():
 
     parser.add_argument('--learning_rate',
                         action='store',
-                        default = 0.001,
+                        default = 0.002,
                         type=float,
                         required=False,
                         metavar='learning rate',
@@ -111,7 +144,7 @@ def parse_command_line():
 
     parser.add_argument('--batch_size',
                         action='store',
-                        default = 4,
+                        default = 2,
                         type=float,
                         required=False,
                         metavar='batch size',
@@ -120,7 +153,7 @@ def parse_command_line():
 
     parser.add_argument('--num_epochs',
                         action='store',
-                        default = 5,
+                        default = 50,
                         type=float,
                         required=False,
                         metavar='num epochs',
@@ -144,17 +177,6 @@ def parse_command_line():
                         metavar='num epochs',
                         help='Specify height to crop image to from center'
                         )
-
-    parser.add_argument('--ucl_all', # TODO: This arg will indicate if user wants to use specific video folders or if they just wanna use all of them
-                        action='store',
-                        default = False, # TODO: True if they want to use all of the UCL data. False if they want to use a portion of it.
-                        type=bool,
-                        required=False,
-                        metavar='T/F select all of UCL data or not',
-                        help='T/F select all of UCL data or not'
-                        )
-
-
 
     return vars(parser.parse_args())
 
