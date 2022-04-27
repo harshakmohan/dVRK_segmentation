@@ -83,7 +83,7 @@ class SoftDiceLoss(nn.Module):
         denominator = torch.sum(torch.square(preds) + torch.square(ground_truth), dim=axes)
         return 1 - torch.mean(numerator / (denominator + epsilon))  # average over classes and batch
 
-
+# bool change
 class DiceLoss2D(nn.Module):
     """Originally implemented by Cong Gao."""
 
