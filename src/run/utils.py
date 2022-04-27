@@ -60,6 +60,29 @@ def check_accuracy(loader, model, device="cuda:0" if torch.cuda.is_available() e
     print(f"Dice score: {dice_score / len(loader)}")
     model.train()
 
+def dice(a, b):
+    '''
+    Originally implemented by Prabha Mandaleeka
+
+    :param a: predicted segmentation mask
+    :param b: ground truth segmentation mask
+    :return: Sorensen-Dice coefficient between two masks
+    '''
+    return 100 * np.sum(a[b>0]) * 2 / (np.sum(a) + np.sum(b))
+
+
+class SoftDiceLoss(nn.Module):
+
+    def __int__(self):
+        super(SoftDiceLoss, self).__int__()
+
+    def forward(self, preds, ground_truth, epsilon=1e-6):
+        # skip the batch and class axis for calculating Dice score
+        axes = tuple(range(1, len(preds.shape) - 1))
+        numerator = 2. * torch.sum(preds * ground_truth, dim=axes)
+        denominator = torch.sum(torch.square(preds) + torch.square(ground_truth), dim=axes)
+        return 1 - torch.mean(numerator / (denominator + epsilon))  # average over classes and batch
+
 
 class DiceLoss2D(nn.Module):
     """Originally implemented by Cong Gao."""
