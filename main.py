@@ -53,7 +53,7 @@ def parse_command_line():
 
     current_dir = os.path.abspath(os.getcwd())
     ucl_data_dir = os.path.join(current_dir, 'data/ucl_dataset')
-    endovis_data_dir = os.path.join(current_dir, 'data/endovis_dataset')
+    endovis_data_dir = os.path.join(current_dir, 'data/binary_endovis')
 
     parser.add_argument('--ucl_data_dir',
                         action='store',

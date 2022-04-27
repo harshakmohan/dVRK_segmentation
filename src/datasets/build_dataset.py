@@ -38,13 +38,7 @@ class UCL(Dataset):
 
             for video in sample:
                 for i in range(300):
-                    if i < 10:
-                        name = "00" + str(i) + ".png"
-                    elif i < 100:
-                        name = "0" + str(i) + ".png"
-                    else:
-                        name = str(i) + ".png"
-
+                    name = f'{str(i).zfill(3)}.png'
                     self.img_paths.append( osp.join(osp.join(osp.join(self.data_folder, video), 'images'), name) )
                     self.mask_paths.append( osp.join(osp.join(osp.join(self.data_folder, video), 'ground_truth'),name) )
         else:
@@ -56,13 +50,7 @@ class UCL(Dataset):
 
             for video in self.video_paths:
                 for i in range(300):
-                    if i < 10:
-                        name = "00" + str(i) + ".png"
-                    elif i < 100:
-                        name = "0" + str(i) + ".png"
-                    else:
-                        name = str(i) + ".png"
-
+                    name = f'{str(i).zfill(3)}.png'
                     self.img_paths.append(osp.join(osp.join(osp.join(self.data_folder, video), 'images'), name))
                     self.mask_paths.append(osp.join(osp.join(osp.join(self.data_folder, video), 'ground_truth'), name))
 
@@ -80,15 +68,21 @@ class UCL(Dataset):
         return image, mask
 
 
-class EndoVis(Dataset):
-    def __init__(self):
-        pass
+class BinaryEndoVis(Dataset):
+    def __init__(self, data_folder: str):
+        img_folder = os.path.abspath(f'{data_folder}/img')
+        label_folder = os.path.abspath(f'{data_folder}/labels')
+
+        self.img_paths = [os.path.join(img_folder, img) for img in os.listdir(img_folder)]
+        self.label_paths = [os.path.join(img_folder, img) for img in os.listdir(label_folder)]
 
     def __len__(self):
-        pass
+        return len(self.img_paths)
 
-    def __getitem__(self):
-        pass
+    def __getitem__(self, idx: int):
+        img = torch.from_numpy(np.asarray(Image.open(self.img_paths[idx]))).float()
+        label = torch.from_numpy(np.asarray(Image.open(self.label_paths[idx]))).float()
+        return img, label
 
 
 def build_dataloaders():
