@@ -17,9 +17,10 @@ def train_fn(train_loader, val_loader, model, optimizer, loss_fn, num_epochs, ch
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     model = model.to(device=device)
     bnorm = nn.BatchNorm2d(num_features=3)
+    dice = []
 
     for epoch in range(num_epochs):
-        print(f'Epoch #{epoch}')
+        print(f'Starting epoch #{epoch+1}...')
         with tqdm(train_loader) as loop:
             for batch_idx, (data, targets) in enumerate(loop):
                 data = bnorm(data).to(device=device)
@@ -36,10 +37,16 @@ def train_fn(train_loader, val_loader, model, optimizer, loss_fn, num_epochs, ch
                     loss.backward()
                     optimizer.step()
 
-            # update tqdm loop
-            loop.set_postfix(loss=loss.item())
+                # update tqdm loop
+                loop.set_postfix(loss=loss.item())
+
         # Get a val accuracy here
-        check_accuracy(val_loader, model)
+        val_dice = check_accuracy(val_loader, model)
+
+        # Save a model checkpoint if current state yields better dice score
+        if val_dice > float(max(dice)):
+            save_checkpoint(state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}_epoch{epoch}.pth')
+        dice.append(val_dice)
 
     # Saving model after last epoch
-    save_checkpoint( model.state_dict(), f'checkpoints/{checkpoint_name}.pth' )
+    save_checkpoint( state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}.pth' )

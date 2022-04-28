@@ -75,6 +75,8 @@ def check_accuracy(loader, model, device="cuda:0" if torch.cuda.is_available() e
     print(f"Dice score: {dice_score / len(loader)}")
     model.train()
 
+    return dice_score/len(loader)
+
 def dice(a, b):
     '''
     Originally implemented by Prabha Mandaleeka
