@@ -35,8 +35,8 @@ def main():
         # Prepare data loaders, optimizer, loss fn
         model = UNET().to(device)
         model.apply(init_weights)
-        train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
-        #train_loader = Endovis_Binary_dataloader(binary_endovis_path, batch_size)
+        #train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
+        train_loader, test_loader = Endovis_Binary_dataloader(binary_endovis_path, batch_size)
         optimizer = optim.Adam(model.parameters(), lr=lr)
 
         loss = DiceLoss2D()
@@ -157,7 +157,7 @@ def parse_command_line():
 
     parser.add_argument('--batch_size',
                         action='store',
-                        default = 2,
+                        default = 3,
                         type=float,
                         required=False,
                         metavar='batch size',
