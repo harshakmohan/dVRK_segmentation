@@ -17,7 +17,7 @@ def train_fn(train_loader, val_loader, model, optimizer, loss_fn, num_epochs, ch
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     model = model.to(device=device)
     bnorm = nn.BatchNorm2d(num_features=3)
-    dice = []
+    dice = [0]
 
     for epoch in range(num_epochs):
         print(f'Starting epoch #{epoch+1}...')
