@@ -85,6 +85,3 @@ class BinaryEndoVis(Dataset):
         return img, label
 
 
-def build_dataloaders():
-    pass
-
