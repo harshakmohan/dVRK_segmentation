@@ -20,7 +20,7 @@ def save_checkpoint(state, filename='model_checkpoints/dummy_checkpoint.pth.tar'
 
 def load_checkpoint(checkpoint, model):
     print('=> Loading checkpoint')
-    model.load_state_dict(checkpoint['state_dict'])
+    model.load_state_dict(checkpoint)
 
 
 def plot_loss():

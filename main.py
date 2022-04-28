@@ -7,6 +7,7 @@ from src.datasets.build_dataloader import UCL_dataloader
 from src.run.utils import check_accuracy, load_checkpoint
 from src.models.unet import UNET
 from src.run.train_nn import train_fn
+from src.run.predict import save_predictions_as_imgs as save_imgs
 from src.run.utils import DiceLoss2D, SoftDiceLoss
 
 
@@ -24,11 +25,11 @@ def main():
     num_epochs = args['num_epochs']
     device = args['device']
     lr = args['learning_rate']
-    model = UNET().to(device)
 
     if run_mode=='train':
         print('Preparing to train!')
         # Prepare data loaders, optimizer, loss fn
+        model = UNET().to(device)
         train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
         optimizer = optim.Adam(model.parameters(), lr=lr)
 
@@ -41,9 +42,14 @@ def main():
         print('Preparing to predict!')
         # TODO: If predict mode selected, then perform inference using a model and selected data then save predictions as images
         # checkpoint = '/home/harsha/PycharmProjects/dVRK_segmentation/checkpoints/model_checkpoint.pth'
-        # load_checkpoint(model, checkpoint)
+        model = UNET().to(device)
+        checkpoint = torch.load('/home/harsha/PycharmProjects/dVRK_segmentation/checkpoints/unet_checkpoint_95acc_82ds.tar')['state_dict']
+        model.load_state_dict(checkpoint)
+
+        train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
+        save_imgs(test_loader, model, device)
         # check_accuracy(test_loader, model)
-        pass
+
 
     else:
         raise ValueError('Incorrect run mode specified. Either specify "train" or "predict"...')
