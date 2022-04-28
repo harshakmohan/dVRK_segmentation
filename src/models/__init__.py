@@ -1,1 +1,1 @@
-from .unet import UNET
+from .unet import UNET, UNetV2

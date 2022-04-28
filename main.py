@@ -1,24 +1,27 @@
 import argparse
 import torch
 import os
+import os.path as osp
 import torch.optim as optim
 import torch.nn as nn
-from src.datasets.build_dataloader import UCL_dataloader
+from src.datasets.build_dataloader import UCL_dataloader, Endovis_Binary_dataloader
 from src.run.utils import check_accuracy, load_checkpoint
 from src.models.unet import UNET
 from src.run.train_nn import train_fn
 from src.run.predict import save_predictions_as_imgs as save_imgs
-from src.run.utils import DiceLoss2D, SoftDiceLoss
+from src.run.utils import DiceLoss2D, SoftDiceLoss, init_weights
 
 
 def main():
     args = parse_command_line()
+    cwd = os.getcwd()
+    binary_endovis_path = osp.join(osp.join(cwd, 'data'), 'binary_endovis')
 
     # Unpack args
     folder = args['ucl_data_dir']
     run_mode = args['run_mode']
+    checkpoint_name = args['checkpoint_name']
 
-    #train_vids = ['Video_01']
     train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07', 'Video_08', 'Video_09', 'Video_10', 'Video_12', 'Video_13']
     test_vids = ['Video_14']
     batch_size = args['batch_size']
@@ -30,14 +33,17 @@ def main():
         print('Preparing to train!')
         # Prepare data loaders, optimizer, loss fn
         model = UNET().to(device)
-        train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
+        model.apply(init_weights)
+        _, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
+        train_loader = Endovis_Binary_dataloader(binary_endovis_path, batch_size)
         optimizer = optim.Adam(model.parameters(), lr=lr)
 
-        #loss = DiceLoss2D()
-        loss = nn.BCEWithLogitsLoss()
+        loss = DiceLoss2D()
+        #loss = nn.BCEWithLogitsLoss()
         #loss = SoftDiceLoss()
 
-        train_fn(train_loader, test_loader, model, optimizer, loss, num_epochs)
+        train_fn(train_loader, test_loader, model, optimizer, loss, num_epochs, checkpoint_name)
+
     elif run_mode=='predict':
         print('Preparing to predict!')
         # TODO: If predict mode selected, then perform inference using a model and selected data then save predictions as images
@@ -123,7 +129,7 @@ def parse_command_line():
 
     parser.add_argument('--checkpoint_name',
                         action='store',
-                        default = 'model_ckpt1',
+                        default = 'unet_endovis',
                         type=str,
                         required=False,
                         metavar='out',
@@ -132,7 +138,7 @@ def parse_command_line():
 
     parser.add_argument('--learning_rate',
                         action='store',
-                        default = 0.002,
+                        default = 0.001,
                         type=float,
                         required=False,
                         metavar='learning rate',

@@ -80,8 +80,9 @@ class BinaryEndoVis(Dataset):
         return len(self.img_paths)
 
     def __getitem__(self, idx: int):
-        img = torch.from_numpy(np.asarray(Image.open(self.img_paths[idx]))).float()
-        label = torch.from_numpy(np.asarray(Image.open(self.label_paths[idx]))).float()
+        img = torch.from_numpy(np.asarray(Image.open(self.img_paths[idx]).convert('RGB')) / 255.0).float()
+        img = torch.permute(img, (2, 0, 1))
+        label = torch.from_numpy(np.asarray(Image.open(self.label_paths[idx]).convert('L'), dtype=np.float32) / 255.0).float()
         return img, label
 
 

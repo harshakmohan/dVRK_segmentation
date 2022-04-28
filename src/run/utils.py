@@ -8,8 +8,9 @@ import logging
 import torch
 
 from torch.utils.data import DataLoader
-from src.datasets import UCL, EndoVis
+from src.datasets import UCL, BinaryEndoVis
 from torch import nn
+from torchvision import transforms
 
 __all__ =['save_checkpoint', 'load_checkpoint', 'plot_loss', 'check_accuracy', 'DiceLoss2D']
 
@@ -26,6 +27,18 @@ def load_checkpoint(checkpoint, model):
 def plot_loss():
     pass
 
+def init_weights(modelcurr):
+    '''
+    Initialize model weights
+    :param modelcurr:
+    :return:
+    '''
+    for m in modelcurr.modules():
+        if isinstance(m, torch.nn.Conv2d):
+            torch.nn.init.kaiming_normal_(m.weight.data)
+            #torch.nn.init.xavier_uniform_(m.weight.data)
+            #torch.nn.init.constant_(m.weight.data,0)
+            #m.bias.data.zero_()
 
 def check_accuracy(loader, model, device="cuda:0" if torch.cuda.is_available() else "cpu"):
     '''
@@ -36,15 +49,17 @@ def check_accuracy(loader, model, device="cuda:0" if torch.cuda.is_available() e
     :param device: Compute device
     :return:
     '''
-
+    print('Checking val accuracy...')
     num_correct = 0
     num_pixels = 0
     dice_score = 0
     model.eval()
 
+    transform_norm = transforms.Compose([])
+
     with torch.no_grad():
         for x, y in loader:
-            x = x.to(device)
+            x = x.to(device) # TODO: Normalize the image here
             y = y.to(device).unsqueeze(1)
             preds = torch.sigmoid(model(x))
             preds = (preds > 0.5).float()
@@ -83,7 +98,7 @@ class SoftDiceLoss(nn.Module):
         denominator = torch.sum(torch.square(preds) + torch.square(ground_truth), dim=axes)
         return 1 - torch.mean(numerator / (denominator + epsilon))  # average over classes and batch
 
-# bool change
+
 class DiceLoss2D(nn.Module):
     """Originally implemented by Cong Gao."""
 
