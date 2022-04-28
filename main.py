@@ -22,9 +22,10 @@ def main():
     run_mode = args['run_mode']
     checkpoint_name = args['checkpoint_name']
 
-    train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07', 'Video_08', 'Video_09', 'Video_10', 'Video_12', 'Video_13']
-    test_vids = ['Video_14']
-    batch_size = args['batch_size']
+    #train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07', 'Video_08', 'Video_09', 'Video_10', 'Video_12', 'Video_13']
+    train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07']
+    test_vids = ['Video_08']
+    batch_size = int(args['batch_size'])
     num_epochs = args['num_epochs']
     device = args['device']
     lr = args['learning_rate']
