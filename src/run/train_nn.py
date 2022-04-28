@@ -31,10 +31,10 @@ def train_fn(train_loader, val_loader, model, optimizer, loss_fn, num_epochs, ch
                     loss = loss_fn(predictions, targets)
                     print(f'epoch #{epoch}; loss = {loss.item()}')
 
-            # backward
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                    # backward
+                    optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
 
             # update tqdm loop
             loop.set_postfix(loss=loss.item())
