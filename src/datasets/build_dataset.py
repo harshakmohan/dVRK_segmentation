@@ -16,7 +16,7 @@ All data preprocessing should happen here.
 # TODO: @Harsha flesh out Datasets and Dataloader functions
 
 class UCL(Dataset):
-    def __init__(self, data_folder: str, select_all: bool, video_paths: list):
+    def __init__(self, data_folder: str, select_all: bool, video_paths: list, transform=True):
         '''
 
         :param data_folder: From argparse, "ucl_data_dir" which points to UCL dataset
@@ -28,6 +28,7 @@ class UCL(Dataset):
         self.video_paths = None
         self.img_paths = []
         self.mask_paths = []
+        self.transform = transform
 
         if select_all:
             '''
@@ -58,15 +59,30 @@ class UCL(Dataset):
     def __len__(self):
         return len(self.img_paths)
 
+    @staticmethod
+    def data_aug(image, mask):
+        if random.random() > 0.5:
+            image = TF.hflip(image)
+            mask = TF.hflip(mask)
+
+        if random.random() > 0.5:
+            image = TF.vflip(image)
+            mask = TF.vflip(mask)
+
+        return image, mask
 
     def __getitem__(self, index: int):
 
         image = torch.from_numpy(np.array(Image.open(self.img_paths[index]).convert('RGB')) / 255.0).float()
         image = torch.permute(image, (2, 0, 1))
         mask = torch.from_numpy(np.array(Image.open(self.mask_paths[index]).convert('L'), dtype=np.float32) / 255.0).float()
+        #print('image dimensions:', image.size())
+        #print('mask dimensions: ', mask.size())
+
+        if self.transform:
+            image, mask = self.data_aug(image, mask)
 
         return image, mask
-
 
 class BinaryEndoVis(Dataset):
     def __init__(self, data_folder: str):
