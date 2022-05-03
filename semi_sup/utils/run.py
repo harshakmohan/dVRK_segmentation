@@ -6,6 +6,7 @@ from .utils import AverageMeter, save_checkpoint, evaluate_seg
 import torch
 from .metrics import DiceScoreStorer, IoUStorer
 import warnings
+import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
@@ -224,10 +225,41 @@ def test_model(_print, cfg, model, test_loader, weight=''):
             Dice.append(out_evl[4])
             IoU_polyp.append(out_evl[5])
 
+    output_binary = (output >= 0.5).float().cuda()
+
+     # Visualize image
+    image = image.cpu().detach().numpy()
+    index = 0
+    y = image[index]
+    y = y.swapaxes(0,2)
+    y = y.swapaxes(1,0)
+
+    f, axarr = plt.subplots(1,3, figsize=(15,15))
+    plt.axis('off')
+    axarr[0].imshow(y)
+    axarr[0].set_title("Original Image", y = -0.1)
+
+    # Visualize corresponding mask
+    target = target.cpu().detach().numpy()
+    y = target[index]
+    axarr[1].imshow(y, cmap=plt.get_cmap('gray'))
+    axarr[1].set_title("Ground Truth Segmentation", y = -0.1)
+
+    # Visualize predicted mask
+    y = output_binary.cpu().detach().numpy()
+    y = y.swapaxes(0,2)
+    y = y.swapaxes(1,0)
+    y = np.squeeze(y).copy()
+    axarr[2].imshow(y, cmap=plt.get_cmap('gray'))
+    axarr[2].set_title("Predicted Segmentation", y = -0.1)
+
+    plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[]);
+    plt.show()
+
     _print('=========================================')
     _print('MAE: %.3f' % np.mean(MAE))
     _print('Recall: %.3f' % np.mean(Recall))
     _print('Precision: %.3f' % np.mean(Precision))
     _print('Accuracy: %.3f' % np.mean(Accuracy))
     _print('Dice: %.3f' % np.mean(Dice))
-    _print('IoU_polyp: %.3f' % np.mean(IoU_polyp))
+    _print('IoU_tool: %.3f' % np.mean(IoU_polyp))
