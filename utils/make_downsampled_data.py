@@ -1,6 +1,4 @@
 from PIL import Image
-from cv2 import resize
-import numpy as np
 from os import path as osp
 from os import makedirs, mkdir, listdir
 import shutil
