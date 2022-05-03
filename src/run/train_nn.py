@@ -11,7 +11,7 @@ from .utils import ( save_checkpoint, check_accuracy )
 from .utils import DiceLoss2D
 import os
 
-def train_fn(train_loader, val_loader, model, optimizer, loss_fn, num_epochs, checkpoint_name: str):
+def train_fn(train_loader, val_loader, model, optimizer, loss_fn, scheduler, num_epochs, checkpoint_name: str):
 
     # Send model to compute device
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -45,8 +45,10 @@ def train_fn(train_loader, val_loader, model, optimizer, loss_fn, num_epochs, ch
 
         # Save a model checkpoint if current state yields better dice score
         if val_dice > float(max(dice)):
-            save_checkpoint(state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}_epoch{epoch}.pth')
+            val_string = int(100*val_dice)
+            save_checkpoint(state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}_epoch{epoch}_{val_string}ds.pth')
         dice.append(val_dice)
 
+        scheduler.step()
     # Saving model after last epoch
-    save_checkpoint( state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}.pth' )
+    save_checkpoint( state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}pth' )

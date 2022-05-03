@@ -4,6 +4,9 @@ import os
 import os.path as osp
 import torch.optim as optim
 import torch.nn as nn
+
+from torchvision import transforms
+
 from src.datasets.build_dataloader import UCL_dataloader, Endovis_Binary_dataloader
 from src.run.utils import check_accuracy, load_checkpoint
 from src.models.unet import UNET
@@ -22,9 +25,9 @@ def main():
     run_mode = args['run_mode']
     checkpoint_name = args['checkpoint_name']
 
-    #train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07', 'Video_08', 'Video_09', 'Video_10', 'Video_12', 'Video_13']
-    train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07']
-    test_vids = ['Video_09']
+    train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07', 'Video_08', 'Video_09', 'Video_10', 'Video_12', 'Video_13']
+    #train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07']
+    test_vids = ['Video_14']
     batch_size = int(args['batch_size'])
     num_epochs = args['num_epochs']
     device = args['device']
@@ -33,17 +36,32 @@ def main():
     if run_mode=='train':
         print('Preparing to train!')
         # Prepare data loaders, optimizer, loss fn
+        torch.manual_seed(0)
         model = UNET().to(device)
         model.apply(init_weights)
-        #train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
-        train_loader, test_loader = Endovis_Binary_dataloader(binary_endovis_path, batch_size)
-        optimizer = optim.Adam(model.parameters(), lr=lr)
 
+        train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
+        #train_loader, test_loader = Endovis_Binary_dataloader(binary_endovis_path, batch_size)
+        optimizer = optim.Adam(model.parameters(), lr=lr)
+        scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=2, gamma=0.5)
         loss = DiceLoss2D()
         #loss = nn.BCEWithLogitsLoss()
         #loss = SoftDiceLoss()
 
-        train_fn(train_loader, test_loader, model, optimizer, loss, num_epochs, checkpoint_name)
+        train_fn(train_loader, test_loader, model, optimizer, loss, scheduler, num_epochs, checkpoint_name)
+
+    # elif run_mode=='load&train':
+    #     model = UNET().to(device)
+    #     checkpoint = torch.load('/home/harsha/PycharmProjects/dVRK_segmentation/checkpoints/unet_checkpoint_95acc_82ds.tar')
+    #     model.load_state_dict(checkpoint['state_dict'])
+    #
+    #     train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
+    #     #train_loader, test_loader = Endovis_Binary_dataloader(binary_endovis_path, batch_size)
+    #     optimizer = optim.Adam(model.parameters(), lr=lr)
+    #     scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=2, gamma=0.5)
+    #     loss = DiceLoss2D()
+    #
+    #     train_fn(train_loader, test_loader, model, optimizer, loss, scheduler, num_epochs, checkpoint_name)
 
     elif run_mode=='predict':
         print('Preparing to predict!')
