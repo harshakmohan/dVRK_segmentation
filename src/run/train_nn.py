@@ -51,4 +51,6 @@ def train_fn(train_loader, val_loader, model, optimizer, loss_fn, scheduler, num
 
         scheduler.step()
     # Saving model after last epoch
-    save_checkpoint( state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}pth' )
+    save_checkpoint( state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}.pth' )
+
+    # Hi
