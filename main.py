@@ -26,7 +26,7 @@ def main():
     checkpoint_name = args['checkpoint_name']
 
     train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07', 'Video_08', 'Video_09', 'Video_10', 'Video_12', 'Video_13']
-    #train_vids = ['Video_01', 'Video_02', 'Video_03', 'Video_04', 'Video_05', 'Video_06', 'Video_07']
+    #train_vids = ['Video_02']
     test_vids = ['Video_14']
     batch_size = int(args['batch_size'])
     num_epochs = args['num_epochs']
@@ -48,7 +48,7 @@ def main():
         #loss = nn.BCEWithLogitsLoss()
         #loss = SoftDiceLoss()
 
-        train_fn(train_loader, test_loader, model, optimizer, loss, scheduler, num_epochs, checkpoint_name)
+        train_fn(test_loader, test_loader, model, optimizer, loss, scheduler, num_epochs, checkpoint_name)
 
     # elif run_mode=='load&train':
     #     model = UNET().to(device)
@@ -68,11 +68,12 @@ def main():
         # TODO: If predict mode selected, then perform inference using a model and selected data then save predictions as images
         # checkpoint = '/home/harsha/PycharmProjects/dVRK_segmentation/checkpoints/model_checkpoint.pth'
         model = UNET().to(device)
-        checkpoint = torch.load('/home/harsha/PycharmProjects/dVRK_segmentation/checkpoints/unet_checkpoint_95acc_82ds.tar')['state_dict']
+        checkpoint = torch.load('/home/harsha/PycharmProjects/dVRK_segmentation/checkpoints/unet_ucl_epoch10_74ds.pth')
         model.load_state_dict(checkpoint)
+        model.eval()
 
         train_loader, test_loader = UCL_dataloader(folder, 1, train_vids, test_vids)
-        #save_imgs(test_loader, model, device)
+        save_imgs(test_loader, model, device)
         check_accuracy(test_loader, model)
 
 
