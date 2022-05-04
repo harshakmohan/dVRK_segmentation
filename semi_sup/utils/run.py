@@ -225,9 +225,9 @@ def test_model(_print, cfg, model, test_loader, weight=''):
             Dice.append(out_evl[4])
             IoU_polyp.append(out_evl[5])
 
+    # Visualize image, mask and predictions
     output_binary = (output >= 0.5).float().cuda()
 
-     # Visualize image
     image = image.cpu().detach().numpy()
     index = 0
     y = image[index]
