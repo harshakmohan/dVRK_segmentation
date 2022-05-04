@@ -114,9 +114,9 @@ def main(args, cfg):
         model = nn.DataParallel(model)
 
     # Load data
-    train_loader = get_dataset('train', cfg, trainsize=cfg.DATA.SIZE)
-    valid_loader = get_dataset('valid', cfg, trainsize=cfg.DATA.SIZE)
-    test_loader = get_dataset('test', cfg, trainsize=cfg.DATA.SIZE)
+    train_loader, train_denormed_loader = get_dataset('train', cfg, trainsize=cfg.DATA.SIZE)
+    valid_loader, valid_denormed_loader = get_dataset('valid', cfg, trainsize=cfg.DATA.SIZE)
+    test_loader, test_denormed_loader = get_dataset('test', cfg, trainsize=cfg.DATA.SIZE)
 
     # Load scheduler
     scheduler = LR_Scheduler("cos", cfg.OPT.BASE_LR, cfg.TRAIN.EPOCHS, iters_per_epoch=len(train_loader),
@@ -125,7 +125,7 @@ def main(args, cfg):
     if args.mode == "train":
         train_dict = {'CLCC': train_clcc}
         train_dict[cfg.TRAIN.METHOD](logging.info, cfg, model, train_loader, valid_loader, train_criterion,
-                                     valid_criterion, optimizer, scheduler, start_epoch, best_metric, test_loader)
+                                     valid_criterion, optimizer, scheduler, start_epoch, best_metric, test_loader, train_denormed_loader)
     elif args.mode == "valid":
         valid_model(logging.info, cfg, model, valid_criterion, valid_loader)
     else:

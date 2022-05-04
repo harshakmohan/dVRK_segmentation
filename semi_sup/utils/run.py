@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import os
+import sys
 import numpy as np
 from tensorboardX import SummaryWriter
 from .utils import AverageMeter, save_checkpoint, evaluate_seg
@@ -12,7 +13,7 @@ warnings.filterwarnings("ignore")
 
 
 def train_clcc(_print, cfg, model, train_loader, valid_loader, criterion, valid_criterion, optimizer,
-               scheduler, start_epoch, best_metric, test_loader):
+               scheduler, start_epoch, best_metric, test_loader, denormed_loader):
     _print('train train_clcc')
 
     cont_loss = criterion[1]
@@ -40,6 +41,7 @@ def train_clcc(_print, cfg, model, train_loader, valid_loader, criterion, valid_
         """
         model.train()
         tbar = tqdm(train_loader)
+        disp_scores = []
 
         for i, batch in enumerate(tbar):
             image = batch['image']
@@ -118,6 +120,11 @@ def train_clcc(_print, cfg, model, train_loader, valid_loader, criterion, valid_
                             'top_iou_res': top_iou.avg}, epoch)
             tb.add_scalars('Lr', {'Lr': optimizer.param_groups[-1]['lr']}, epoch)
 
+            disp_scores = disp_scores + top_dice.all_scores(output_target[:cfg.TRAIN.LB_BATCH_SIZE], target[:cfg.TRAIN.LB_BATCH_SIZE])
+        # print("ALL DICE SCORES: ", disp_scores)
+        # print("Smallest Dice Score: ", min(disp_scores))
+        # print("Largest Dice Score: ", max(disp_scores))
+
         _print("Train iou: %.3f, dice: %.3f, loss: %.3f" % (top_iou.avg, top_dice.avg, losses.avg))
 
         """
@@ -193,6 +200,9 @@ def test_model(_print, cfg, model, test_loader, weight=''):
     if weight != '':
         model.load_state_dict(torch.load(weight)["state_dict"])
 
+    weight=os.path.join(cfg.DIRS.WEIGHTS, f"best_{cfg.EXP}_{cfg.MODEL.NAME}_fold{cfg.TRAIN.FOLD}.pth")
+    model.load_state_dict(torch.load(weight)["state_dict"])
+
     model.eval()
     tbar = tqdm(test_loader)
     MAE = []
@@ -205,6 +215,7 @@ def test_model(_print, cfg, model, test_loader, weight=''):
     save_dirs = os.path.join(cfg.DIRS.TEST, cfg.EXP)
     os.makedirs(save_dirs, exist_ok=True)
     os.makedirs(os.path.join(save_dirs, 'pred'), exist_ok=True)
+
     with torch.no_grad():
         for batch in tbar:
             _id = batch['imidx']
@@ -225,6 +236,37 @@ def test_model(_print, cfg, model, test_loader, weight=''):
             Dice.append(out_evl[4])
             IoU_polyp.append(out_evl[5])
 
+    _print('=========================================')
+    _print('MAE: %.3f' % np.mean(MAE))
+    _print('Recall: %.3f' % np.mean(Recall))
+    _print('Precision: %.3f' % np.mean(Precision))
+    _print('Accuracy: %.3f' % np.mean(Accuracy))
+    _print('Dice: %.3f' % np.mean(Dice))
+    # print("ALL DICE ", Dice)
+    print("MAX DICE ", max(Dice))
+    print("INDEX ", Dice.index(max(Dice)))
+
+    iterator = 0;
+    max_dice_index = Dice.index(max(Dice))
+    with torch.no_grad():
+        for batch in tbar:
+            _id = batch['imidx']
+            image = batch['image']
+            target = batch['label']
+
+            image = image.to(device='cuda', dtype=torch.float)
+            target = target.to(device='cuda', dtype=torch.float)
+
+            output = model(image)["seg_final"]
+
+            out_evl = evaluate_seg(output.permute(0, 2, 3, 1).squeeze(), target.squeeze())
+
+            if iterator == max_dice_index:
+                print(batch['path'])
+                break
+
+            iterator = iterator +1
+
     # Visualize image, mask and predictions
     output_binary = (output >= 0.5).float().cuda()
 
@@ -236,6 +278,7 @@ def test_model(_print, cfg, model, test_loader, weight=''):
 
     f, axarr = plt.subplots(1,3, figsize=(15,15))
     plt.axis('off')
+    # print("MAXIMI", max(y.all()))
     axarr[0].imshow(y)
     axarr[0].set_title("Original Image", y = -0.1)
 
@@ -251,15 +294,61 @@ def test_model(_print, cfg, model, test_loader, weight=''):
     y = y.swapaxes(1,0)
     y = np.squeeze(y).copy()
     axarr[2].imshow(y, cmap=plt.get_cmap('gray'))
-    axarr[2].set_title("Predicted Segmentation", y = -0.1)
+    axarr[2].set_title("Predicted Best Segmentation", y = -0.1)
 
     plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[]);
     plt.show()
 
-    _print('=========================================')
-    _print('MAE: %.3f' % np.mean(MAE))
-    _print('Recall: %.3f' % np.mean(Recall))
-    _print('Precision: %.3f' % np.mean(Precision))
-    _print('Accuracy: %.3f' % np.mean(Accuracy))
-    _print('Dice: %.3f' % np.mean(Dice))
-    _print('IoU_tool: %.3f' % np.mean(IoU_polyp))
+
+    iterator = 0;
+    min_dice_index = Dice.index(min(Dice))
+    with torch.no_grad():
+        for batch in tbar:
+            _id = batch['imidx']
+            image = batch['image']
+            target = batch['label']
+
+            image = image.to(device='cuda', dtype=torch.float)
+            target = target.to(device='cuda', dtype=torch.float)
+
+            output = model(image)["seg_final"]
+
+            out_evl = evaluate_seg(output.permute(0, 2, 3, 1).squeeze(), target.squeeze())
+
+            if iterator == max_dice_index:
+                print(batch['path'])
+                break
+
+            iterator = iterator +1
+
+    # Visualize image, mask and predictions
+    output_binary = (output >= 0.5).float().cuda()
+
+    image = image.cpu().detach().numpy()
+    index = 0
+    y = image[index]
+    y = y.swapaxes(0,2)
+    y = y.swapaxes(1,0)
+
+    f, axarr = plt.subplots(1,3, figsize=(15,15))
+    plt.axis('off')
+    # print("MAXIMI", max(y.all()))
+    axarr[0].imshow(y)
+    axarr[0].set_title("Original Image", y = -0.1)
+
+    # Visualize corresponding mask
+    target = target.cpu().detach().numpy()
+    y = target[index]
+    axarr[1].imshow(y, cmap=plt.get_cmap('gray'))
+    axarr[1].set_title("Ground Truth Segmentation", y = -0.1)
+
+    # Visualize predicted mask
+    y = output_binary.cpu().detach().numpy()
+    y = y.swapaxes(0,2)
+    y = y.swapaxes(1,0)
+    y = np.squeeze(y).copy()
+    axarr[2].imshow(y, cmap=plt.get_cmap('gray'))
+    axarr[2].set_title("Predicted Worst Segmentation", y = -0.1)
+
+    plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[]);
+    plt.show()

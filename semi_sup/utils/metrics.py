@@ -28,6 +28,12 @@ class DiceScoreStorer(object):
         self.sum += sum(dice_scores)
         self.avg = self.sum / self.count
 
+    def all_scores(self, pred_mask, gt_mask):
+        N = pred_mask.size(0)
+        dice_scores = self._dice_score(pred_mask, gt_mask)
+        dice_scores = list(dice_scores.detach().cpu().numpy())
+        return dice_scores
+
     @property
     def val(self):
         return self.array[-1]
