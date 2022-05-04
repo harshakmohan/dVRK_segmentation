@@ -19,8 +19,8 @@ else:
     shutil.rmtree(resize_folder)
     makedirs(resize_folder)
 
-for i in [100,80,60,40,20]:
-    dir_name = 'control' if i == 1 else f'scaled_{i}'
+for i in [100,50,25,12,6]:
+    dir_name = 'control' if i == 100 else f'scaled_{i}'
     mkdir(f'{resize_folder}/{dir_name}')
     mkdir(f'{resize_folder}/{dir_name}/img')
     mkdir(f'{resize_folder}/{dir_name}/labels')
@@ -35,8 +35,8 @@ for i in [100,80,60,40,20]:
         dim = (int(im.shape[1] * scale), int(im.shape[0] * scale))
         im_rsz = cv.resize(im, dim, interpolation=INTER_NEAREST)
         mask_rsz = cv.resize(mask, dim, interpolation=INTER_NEAREST)
-        cv.imwrite(f'{dir_pth}/img/{img}', im)
-        cv.imwrite(f'{dir_pth}/labels/{img}', mask)
+        cv.imwrite(f'{dir_pth}/img/{img}', im_rsz)
+        cv.imwrite(f'{dir_pth}/labels/{img}', mask_rsz)
         # im = Image.open(img_pth)
         # mask = Image.open(mask_pth)
         # width, height = im.size
