@@ -1,7 +1,10 @@
 from PIL import Image
 from os import path as osp
 from os import makedirs, mkdir, listdir
+import cv2 as cv
 import shutil
+
+from cv2 import INTER_NEAREST
 
 #Using UCL dataset video 1
 data_folder = osp.abspath('../data/ucl_dataset/Video_01')
@@ -16,7 +19,7 @@ else:
     shutil.rmtree(resize_folder)
     makedirs(resize_folder)
 
-for i in [1,2,4,8,16,32]:
+for i in [100,80,60,40,20]:
     dir_name = 'control' if i == 1 else f'scaled_{i}'
     mkdir(f'{resize_folder}/{dir_name}')
     mkdir(f'{resize_folder}/{dir_name}/img')
@@ -26,11 +29,19 @@ for i in [1,2,4,8,16,32]:
     for img in listdir(raw_img):
         img_pth = osp.join(raw_img, img)
         mask_pth = osp.join(raw_masks, img)
-        im = Image.open(img_pth)
-        mask = Image.open(mask_pth)
-        width, height = im.size
-        im = im.resize((width//i, height//i))
-        mask = mask.resize((width//i, height//i))
-        im.save(f'{dir_pth}/img/{img}')
-        mask.save(f'{dir_pth}/labels/{img}')
+        im = cv.imread(img_pth)
+        mask = cv.imread(mask_pth)
+        scale = i/100
+        dim = (int(im.shape[1] * scale), int(im.shape[0] * scale))
+        im_rsz = cv.resize(im, dim, interpolation=INTER_NEAREST)
+        mask_rsz = cv.resize(mask, dim, interpolation=INTER_NEAREST)
+        cv.imwrite(f'{dir_pth}/img/{img}', im)
+        cv.imwrite(f'{dir_pth}/labels/{img}', mask)
+        # im = Image.open(img_pth)
+        # mask = Image.open(mask_pth)
+        # width, height = im.size
+        # im = im.resize((width//i, height//i))
+        # mask = mask.resize((width//i, height//i))
+        # im.save(f'{dir_pth}/img/{img}')
+        # mask.save(f'{dir_pth}/labels/{img}')
 
