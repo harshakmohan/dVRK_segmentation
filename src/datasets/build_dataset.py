@@ -7,6 +7,8 @@ import torchvision.transforms.functional as TF
 
 from PIL import Image
 from torch.utils.data import Dataset
+from torchvision import transforms
+
 
 '''
 Grab data and create all the necessary dataloaders.
@@ -76,13 +78,24 @@ class UCL(Dataset):
         image = torch.from_numpy(np.array(Image.open(self.img_paths[index]).convert('RGB')) / 255.0).float()
         image = torch.permute(image, (2, 0, 1))
         mask = torch.from_numpy(np.array(Image.open(self.mask_paths[index]).convert('L'), dtype=np.float32) / 255.0).float()
-        #print('image dimensions:', image.size())
-        #print('mask dimensions: ', mask.size())
+
+        # Normalizing the image (Comment this block out if you don't want to normalize the image)
+        r_mean = torch.mean(image[0, :, :])
+        g_mean = torch.mean(image[1, :, :])
+        b_mean = torch.mean(image[2, :, :])
+        mean = [r_mean, g_mean, b_mean]
+        r_std = torch.std(image[0, :, :])
+        g_std = torch.std(image[1, :, :])
+        b_std = torch.std(image[2, :, :])
+        std = [r_std, g_std, b_std]
+        transform_norm = transforms.Compose([transforms.Normalize(mean, std)])
+        image = transform_norm(image)
 
         if self.transform:
             image, mask = self.data_aug(image, mask)
 
         return image, mask
+
 
 class BinaryEndoVis(Dataset):
     def __init__(self, data_folder: str):
@@ -99,6 +112,20 @@ class BinaryEndoVis(Dataset):
         img = torch.from_numpy(np.asarray(Image.open(self.img_paths[idx]).convert('RGB')) / 255.0).float()
         img = torch.permute(img, (2, 0, 1))
         label = torch.from_numpy(np.asarray(Image.open(self.label_paths[idx]).convert('L'), dtype=np.float32) / 255.0).float()
+
+
+        # Normalizing the image (Comment this block out if you don't want to normalize the image)
+        r_mean = torch.mean(img[0, :, :])
+        g_mean = torch.mean(img[1, :, :])
+        b_mean = torch.mean(img[2, :, :])
+        mean = [r_mean, g_mean, b_mean]
+        r_std = torch.std(img[0, :, :])
+        g_std = torch.std(img[1, :, :])
+        b_std = torch.std(img[2, :, :])
+        std = [r_std, g_std, b_std]
+        transform_norm = transforms.Compose([transforms.Normalize(mean, std)])
+        img = transform_norm(img)
+
         return img, label
 
 

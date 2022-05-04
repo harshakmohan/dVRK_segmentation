@@ -12,6 +12,7 @@ from src.run.utils import check_accuracy, load_checkpoint
 from src.models.unet import UNET
 from src.run.train_nn import train_fn
 from src.run.predict import save_predictions_as_imgs as save_imgs
+from src.run.predict import save_best_worst
 from src.run.utils import DiceLoss2D, SoftDiceLoss, init_weights
 
 
@@ -40,15 +41,15 @@ def main():
         model = UNET().to(device)
         model.apply(init_weights)
 
-        train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
-        #train_loader, test_loader = Endovis_Binary_dataloader(binary_endovis_path, batch_size)
+        #train_loader, test_loader = UCL_dataloader(folder, batch_size, train_vids, test_vids)
+        train_loader, test_loader = Endovis_Binary_dataloader(binary_endovis_path, batch_size)
         optimizer = optim.Adam(model.parameters(), lr=lr)
         scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=2, gamma=0.5)
         loss = DiceLoss2D()
         #loss = nn.BCEWithLogitsLoss()
         #loss = SoftDiceLoss()
 
-        train_fn(test_loader, test_loader, model, optimizer, loss, scheduler, num_epochs, checkpoint_name)
+        train_fn(train_loader, test_loader, model, optimizer, loss, scheduler, num_epochs, checkpoint_name)
 
     # elif run_mode=='load&train':
     #     model = UNET().to(device)
@@ -73,13 +74,25 @@ def main():
         model.eval()
 
         train_loader, test_loader = UCL_dataloader(folder, 1, train_vids, test_vids)
+        # Here compute dice score for each individual image and store in a list.
+        # For best and worst dice, calculate TP, FN
+
         save_imgs(test_loader, model, device)
         check_accuracy(test_loader, model)
 
+    elif run_mode == 'metrics':
+        print('Searching for best & worst segmentations...')
+        model = UNET().to(device)
+        checkpoint = torch.load('/home/harsha/PycharmProjects/dVRK_segmentation/checkpoints/unet_ucl_epoch5_84ds.pth')
+        model.load_state_dict(checkpoint)
+        model.eval()
 
-    else:
-        raise ValueError('Incorrect run mode specified. Either specify "train" or "predict"...')
+        test_vids = ['Video_15', 'Video_16', 'Video_17', 'Video_18', 'Video_19', 'Video_20']
+        #test_vids = ['Video_15']
 
+        _, test_loader = UCL_dataloader(folder, 1, train_vids, test_vids)
+
+        save_best_worst(loader=test_loader, model=model)
 
 
 def parse_command_line():
@@ -91,7 +104,7 @@ def parse_command_line():
                         default='train',
                         type=str,
                         required=False,
-                        choices=['train', 'predict'],
+                        choices=['train', 'predict', 'metrics'],
                         metavar='train/predict',
                         help='Specify "train" or "predict".'
                         )
@@ -185,7 +198,7 @@ def parse_command_line():
 
     parser.add_argument('--num_epochs',
                         action='store',
-                        default = 50,
+                        default = 15,
                         type=float,
                         required=False,
                         metavar='num epochs',

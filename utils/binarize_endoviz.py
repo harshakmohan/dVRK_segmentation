@@ -40,14 +40,16 @@ for folder in subfolders: #instrument_dataset_x
     for i in range(len(os.listdir(frames))): #for each image in dataset
         img_name = f'frame{str(i).zfill(3)}.png'
         save_name = f'{folder[-1]}_frame{str(i).zfill(3)}.png'
-        masks = [os.path.join(gt, f'{tool}/{img_name}') for tool in gt_folders if tool != os.path.abspath(os.path.join(gt, 'Other_labels'))] #masks associated with frame
+        masks = [os.path.join(gt, f'{tool}/{img_name}') for tool in gt_folders] #if tool != os.path.abspath(os.path.join(gt, 'Other_labels'))] #masks associated with frame
         images = [np.asarray(Image.open(mask)) for mask in masks]
         summed = sum(images)
         binary_mask = np.where(summed > 0, 255, 0)
         img_mask = Image.fromarray(binary_mask.astype('uint8'))
-        img_mask = crop_center(img_mask, 701, 538)
+        img_mask = crop_center(img_mask, 1200, 900)
         img_mask.save(f'{binary_path}/labels/{save_name}')
 
         orig = Image.open(f'{frames}/{img_name}')
-        orig = crop_center(orig, 701, 538)
+        orig = crop_center(orig, 1200, 900)
         orig.save(f'{binary_path}/img/{save_name}')
+
+print('Binarized endovis dataset completed...')

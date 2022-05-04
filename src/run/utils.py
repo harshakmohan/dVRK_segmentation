@@ -57,20 +57,20 @@ def check_accuracy(loader, model, device="cuda:0" if torch.cuda.is_available() e
 
     with torch.no_grad():
         for x, y in loader:
-            #x = x.to(device) # TODO: Normalize the image here
-            #print('input size: ', x.size())
-            r_mean = torch.mean(x[:, 0, :, :])
-            g_mean = torch.mean(x[:, 1, :, :])
-            b_mean = torch.mean(x[:, 2, :, :])
-            mean = [r_mean, g_mean, b_mean]
 
-            r_std = torch.std(x[:, 0, :, :])
-            g_std = torch.std(x[:, 1, :, :])
-            b_std = torch.std(x[:, 2, :, :])
-            std = [r_std, g_std, b_std]
-            transform_norm = transforms.Compose([transforms.Normalize(mean, std)])
+            # Normalize the image here
+            # r_mean = torch.mean(x[:, 0, :, :])
+            # g_mean = torch.mean(x[:, 1, :, :])
+            # b_mean = torch.mean(x[:, 2, :, :])
+            # mean = [r_mean, g_mean, b_mean]
+            # r_std = torch.std(x[:, 0, :, :])
+            # g_std = torch.std(x[:, 1, :, :])
+            # b_std = torch.std(x[:, 2, :, :])
+            # std = [r_std, g_std, b_std]
+            # transform_norm = transforms.Compose([transforms.Normalize(mean, std)])
+            # x = transform_norm(x).to(device)
 
-            x = transform_norm(x).to(device)
+            x = x.to(device)
             y = y.to(device).unsqueeze(1)
             preds = torch.sigmoid(model(x))
             preds = (preds > 0.5).float()
@@ -86,6 +86,33 @@ def check_accuracy(loader, model, device="cuda:0" if torch.cuda.is_available() e
     print(f"Dice score: {dice_score / len(loader)}")
     model.train()
     return dice_score/len(loader)
+
+def check_dice(loader, model, device="cuda:0" if torch.cuda.is_available() else "cpu"):
+    '''
+    Check dice function for binary semantic segmentation.
+
+    Meant to only be used with a single image batch_size = 1
+
+    :param loader: Dataloader to check accuracy on. Requires access to ground truth segmentation mask.
+    :param model: Model used to perform inference
+    :param device: Compute device
+    :return: a list of dice scores for each image passed in from the loader.
+    '''
+    model.eval()
+    img_dice = []
+    print('Checking dice for each image now...')
+    with torch.no_grad():
+        for x, y in loader:
+            x = x.to(device)
+            y = y.to(device).unsqueeze(1)
+            preds = torch.sigmoid(model(x))
+            preds = (preds > 0.5).float()
+            dice_score = (2 * (preds * y).sum()) / (
+                    (preds + y).sum() + 1e-8
+            )
+            img_dice.append(dice_score)
+
+    return img_dice
 
 def dice(a, b):
     '''

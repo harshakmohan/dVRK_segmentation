@@ -46,11 +46,11 @@ def train_fn(train_loader, val_loader, model, optimizer, loss_fn, scheduler, num
         # Save a model checkpoint if current state yields better dice score
         if val_dice > float(max(dice)):
             val_string = int(100*val_dice)
-            save_checkpoint(state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}_epoch{epoch}_{val_string}ds.pth.tar')
+            save_checkpoint(state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}_epoch{epoch}_{val_string}ds.pth')
         dice.append(val_dice)
 
         scheduler.step()
     # Saving model after last epoch
     val_string = int(100 * val_dice)
-    save_checkpoint(state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}_epoch{epoch}_{val_string}ds.pth.tar' )
+    save_checkpoint(state=model.state_dict(), filename=f'checkpoints/{checkpoint_name}_epoch{epoch}_{val_string}ds.pth' )
 
