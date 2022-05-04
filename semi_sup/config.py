@@ -74,4 +74,3 @@ _C.TEST.BATCH_SIZE = 1
 
 def get_cfg_defaults():
     return _C.clone()
-
